@@ -35,11 +35,13 @@ git push origin master
 # 3. Backup native modules (net-keepalive is een native addon die niet hercompileert op Node.js 22+)
 cp -r /usr/local/lib/node_modules/homebridge-plugin-samsung-air-conditioner/node_modules /tmp/ac-plugin-node_modules
 
-# 4. Installeer vanuit fork
-npm install -g --ignore-scripts "git+ssh://git@github.com:SanderBaron/HomebridgePluginSamsungAirConditioner.git"
+# 4. Installeer vanuit npm (na `npm publish`) of vanuit fork
+npm install -g --ignore-scripts homebridge-samsung-ac-port2878
+# of vanuit fork:
+# npm install -g --ignore-scripts "git+ssh://git@github.com:SanderBaron/HomebridgePluginSamsungAirConditioner.git"
 
 # 5. Zet native modules terug
-cp -r /tmp/ac-plugin-node_modules/* /usr/local/lib/node_modules/homebridge-plugin-samsung-air-conditioner/node_modules/
+cp -r /tmp/ac-plugin-node_modules/* /usr/local/lib/node_modules/homebridge-samsung-ac-port2878/node_modules/
 
 # 6. Herstart Homebridge
 sudo brew services restart homebridge
