@@ -80,4 +80,7 @@ typings/
 
 .devcontainer/homebridge/
 
+# Claude Code local settings
+.claude/
+
 # End of https://www.gitignore.io/api/node
