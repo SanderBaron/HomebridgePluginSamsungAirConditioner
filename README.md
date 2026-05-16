@@ -1,51 +1,113 @@
-# Homebridge-plugin-samsung-air-conditioner
+# homebridge-plugin-samsung-air-conditioner
 
 [![npm version](https://badge.fury.io/js/homebridge-plugin-samsung-air-conditioner.svg)](https://badge.fury.io/js/homebridge-plugin-samsung-air-conditioner)
 
-Homebridge plugin for controlling Samsung Air Conditioner working on port 2878. Allows to control AC with HomeKit and Siri.
-If you have Samsung AC which operates on port 8888, check this plugin instead: https://github.com/cicciovo/homebridge-samsung-airconditioner
+Homebridge plugin for controlling Samsung Air Conditioners working on port 2878. Allows you to control your AC with HomeKit and Siri.
+
+> **This is a fork** of [SebastianOsinski/HomebridgePluginSamsungAirConditioner](https://github.com/SebastianOsinski/HomebridgePluginSamsungAirConditioner) with the following additions:
+> - **VirusDoc (UV)** and **Comfort (SoftCool)** mode switches
+> - **Homebridge v2 compatible** (migrated from deprecated callback API to `onGet`/`onSet`)
+
+If you have a Samsung AC that operates on port 8888, use this plugin instead: https://github.com/cicciovo/homebridge-samsung-airconditioner
+
+---
 
 ## Installation
-1. Install [Homebridge](https://github.com/nfarina/homebridge).
-2. Install this plugin by running `npm install -g homebridge-plugin-samsung-air-conditioner`.
-3. Assign static IP address to your AC (check your router settings to do that).
-4. Run `homebridge-samsung-ac-get-token <your ac's ip address>` in terminal and follow instructions. If you get any SSL/certificate errors. Try `homebridge-samsung-ac-get-token <your ac's ip address> --skipCertificate`.
-5. Update your Homebridge `config.json`. Check `config-sample.json` for reference. 
-    - Required parameters:
-        - `accessory` - always "Samsung Air Conditioner"
-        - `name` - Name of your device
-        - `ip_address` - IP address of air conditioner
-        - `mac` - MAC address of air conditioner in format `AA:BB:CC:DD:EE:FF` or `AA-BB-CC-DD-EE-FF`
-        - `token` - token returned by `homebridge-samsung-ac-get-token <your ac's ip address>`
-    - Optional parameters:
-        - `skip_certificate` - `true`/`false` (default `false`). If `true` then skips passing certificate to underlying connection which might mitigate SSL errors on some AC units. Try it if you get any SSL/certificate errors.
-        - `log_socket_activity` - `true`/`false` (default `false`). If `true` then logs additional raw data to console
-        - `keep_alive` - dictionary with keep alive settings:
-            - `enabled` - `true`/`false` (default `true`). If `true` then enables keep alive on underlying socket
-            - `initial_delay` - milliseconds as integer (default `10000`). Time which needs to pass after last write to socket before sending first keep alive packet
-            - `interval` - milliseconds as integer (default `10000`). Time between keep alive packets
-            - `probes` - integer (default `10`). Number of keep alive packets to fails before treating connection as closed
+
+### Via Homebridge UI (recommended)
+
+Search for `homebridge-plugin-samsung-air-conditioner` in the Homebridge UI plugin search and install from there.
+
+### Manual
+
+```bash
+npm install -g homebridge-plugin-samsung-air-conditioner
+```
+
+---
+
+## Setup
+
+1. Assign a static IP address to your AC (via your router's DHCP settings).
+2. Run the token helper and follow the on-screen instructions:
+   ```bash
+   homebridge-samsung-ac-get-token <your-ac-ip>
+   ```
+   If you get SSL/certificate errors, add `--skipCertificate`:
+   ```bash
+   homebridge-samsung-ac-get-token <your-ac-ip> --skipCertificate
+   ```
+3. Add the accessory to your Homebridge `config.json`. See `config-sample.json` for a full example.
+
+---
+
+## Configuration
+
+```json
+{
+  "accessory": "Samsung Air Conditioner",
+  "name": "Living Room AC",
+  "ip_address": "192.168.1.100",
+  "mac": "AA:BB:CC:DD:EE:FF",
+  "token": "<token from step 2>"
+}
+```
+
+### Required parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `accessory` | Always `"Samsung Air Conditioner"` |
+| `name` | Name shown in HomeKit |
+| `ip_address` | IP address of the air conditioner |
+| `mac` | MAC address in format `AA:BB:CC:DD:EE:FF` or `AA-BB-CC-DD-EE-FF` |
+| `token` | Token obtained via `homebridge-samsung-ac-get-token` |
+
+### Optional parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `skip_certificate` | `false` | Skip SSL certificate validation (try if you get SSL errors) |
+| `log_socket_activity` | `false` | Log raw socket data (useful for debugging) |
+| `keep_alive.enabled` | `true` | Enable TCP keep-alive |
+| `keep_alive.initial_delay` | `10000` | Milliseconds before first keep-alive packet |
+| `keep_alive.interval` | `10000` | Milliseconds between keep-alive packets |
+| `keep_alive.probes` | `10` | Number of failed probes before treating connection as closed |
+
+---
 
 ## Features
-- Turning AC on and off
-- Getting and setting target temperature
-- Getting current temperature
-- Getting and setting mode
-- Getting and setting swing mode
-- Getting and setting wind level
-- Reacting to changes made by using AC's remote
 
-## Confirmed compatibility list (model numbers)
-- AR12HSSFAWKNEU
-- AR18HSFSAWKNEU
-- AR12HSFSAWKN
-- AR24FSSSBWKN
-- AR12FSSEDWUNEU
-- AR09HSSDBWKN
-- AR09HSSFRWKNER
-- MLM-H02
+- Turn AC on and off
+- Get and set target temperature
+- Get current temperature
+- Get and set operating mode (cool / heat / auto)
+- Get and set swing mode
+- Get and set wind level (rotation speed)
+- **VirusDoc (UV sterilisation)** switch — via `AC_ADD_SPI` attribute
+- **Comfort (SoftCool)** switch — via `AC_FUN_COMODE` attribute
+- Reacts to changes made via the AC's remote control
 
-If your device's number is not on the list but you have tested it and it works, please make a PR with your device's number.
+---
 
-## Acknowledgment
-This project is heavily based on awesome work of CloCkWeRX - https://github.com/CloCkWeRX/node-samsung-airconditioner
+## Confirmed compatibility
+
+| Model |
+|-------|
+| AR12HSSFAWKNEU |
+| AR18HSFSAWKNEU |
+| AR12HSFSAWKN |
+| AR24FSSSBWKN |
+| AR12FSSEDWUNEU |
+| AR09HSSDBWKN |
+| AR09HSSFRWKNER |
+| MLM-H02 |
+
+If your model works but isn't listed, please open a PR to add it.
+
+---
+
+## Acknowledgements
+
+- Original plugin by [Sebastian Osiński](https://github.com/SebastianOsinski/HomebridgePluginSamsungAirConditioner)
+- Protocol research by [CloCkWeRX](https://github.com/CloCkWeRX/node-samsung-airconditioner)
