@@ -1,1 +1,4 @@
+.claude/
+NOTES.md
 .devcontainer/
+*.tgz

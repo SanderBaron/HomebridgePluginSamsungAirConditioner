@@ -1,7 +1,7 @@
 {
   "name": "homebridge-samsung-ac-port2878",
-  "version": "4.0.0",
-  "description": "Homebridge plugin for Samsung Air Conditioners (port 2878) — with VirusDoc and Comfort switches, Homebridge v2 compatible",
+  "version": "4.1.0",
+  "description": "Homebridge plugin for Samsung Air Conditioners (port 2878) — with VirusDoc, Comfort, vertical and horizontal swing switches, Homebridge v2 compatible",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,8 @@
     "ac",
     "2878",
     "virusdoc",
-    "comfort"
+    "comfort",
+    "swing"
   ],
   "homepage": "https://github.com/SanderBaron/HomebridgePluginSamsungAirConditioner",
   "bugs": {
