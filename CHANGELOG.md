@@ -1,5 +1,14 @@
 # Changelog
 
+## 4.4.0 - 2026-06-01
+### Changed
+- Removed `net-keepalive` (and its transitive `ffi-napi` / `ref-napi` native dependencies). Low-level TCP keepalive tuning (`TCP_KEEPINTVL` / `TCP_KEEPCNT`) is replaced by an application-layer dead-socket detector: the plugin tracks the timestamp of the most recent line received from the AC, and if no data has come in for `dead_socket_timeout` ms (default 5 min) it destroys the socket so the existing reconnect flow takes over. The detector is fully passive — no commands are sent to the AC for the purpose of probing, so it cannot trigger AC beeps.
+- Plugin is now pure-JavaScript: no native modules to compile, install is faster and works out of the box on every supported Node.js version.
+### Added
+- `keep_alive.dead_socket_timeout` config option (milliseconds, default 300000).
+### Deprecated
+- `keep_alive.interval` and `keep_alive.probes` config options no longer have any effect (a one-time notice is logged at startup if either is set). They can be safely removed from `config.json`.
+
 ## 4.3.0 - 2026-05-29
 ### Added
 - FastCool switch (`AC_FUN_COMODE=TurboMode`) — runs the AC's native turbo mode. Since the unit auto-cancels TurboMode after ~30 min, the routine re-issues it for 4 periods (~2 hours of sustained turbo), then returns to normal cooling at the remembered target temp with Auto fan. Re-issue is event-driven on the AC's auto-revert push, with a 32-min safety timer as fallback. Switching FastCool on powers the AC on first if it was off. A manual temp/fan change cancels the routine.
