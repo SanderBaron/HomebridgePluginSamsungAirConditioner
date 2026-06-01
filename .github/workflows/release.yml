@@ -18,6 +18,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm and clear placeholder auth so OIDC takes over
+        run: |
+          npm install -g npm@latest
+          # setup-node writes `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}`.
+          # Without a NODE_AUTH_TOKEN secret that placeholder confuses npm and
+          # blocks the Trusted Publisher OIDC flow. Strip it.
+          sed -i '/_authToken=/d' "$HOME/.npmrc" || true
+          echo "--- effective .npmrc:"; cat "$HOME/.npmrc" || true
+          echo "--- npm version:"; npm --version
 
       - name: Verify tag matches package.json version
         run: |
