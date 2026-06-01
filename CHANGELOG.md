@@ -2,10 +2,10 @@
 
 ## 4.4.0 - 2026-06-01
 ### Changed
-- Removed `net-keepalive` (and its transitive `ffi-napi` / `ref-napi` native dependencies). Low-level TCP keepalive tuning (`TCP_KEEPINTVL` / `TCP_KEEPCNT`) is replaced by an application-layer dead-socket detector: the plugin tracks the timestamp of the most recent line received from the AC, and if no data has come in for `dead_socket_timeout` ms (default 5 min) it destroys the socket so the existing reconnect flow takes over. The detector is fully passive — no commands are sent to the AC for the purpose of probing, so it cannot trigger AC beeps.
+- Removed `net-keepalive` (and its transitive `ffi-napi` / `ref-napi` native dependencies). Low-level TCP keepalive tuning (`TCP_KEEPINTVL` / `TCP_KEEPCNT`) is replaced by an application-layer dead-socket detector: the plugin tracks the timestamp of the most recent line received from the AC, and if no data has come in for `dead_socket_timeout` ms (default 60 min) it destroys the socket so the existing reconnect flow takes over. The detector is fully passive — no commands are sent to the AC for the purpose of probing, so it cannot trigger AC beeps. Default chosen as a safety net only; Node's `socket.setKeepAlive(true, initial_delay)` plus the OS-level TCP keepalive (~10 min on macOS) handles the common dead-socket cases first.
 - Plugin is now pure-JavaScript: no native modules to compile, install is faster and works out of the box on every supported Node.js version.
 ### Added
-- `keep_alive.dead_socket_timeout` config option (milliseconds, default 300000).
+- `keep_alive.dead_socket_timeout` config option (milliseconds, default 3600000 = 60 min). Set to 0 to disable the application-layer detector entirely and rely solely on TCP keepalive.
 ### Deprecated
 - `keep_alive.interval` and `keep_alive.probes` config options no longer have any effect (a one-time notice is logged at startup if either is set). They can be safely removed from `config.json`.
 
