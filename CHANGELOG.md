@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.5.0 - 2026-06-05
+### Fixed
+- **Switches no longer reappear after power-off** — after the clean-slate reset on power-off the AC echoes back its last active state (e.g. `COMODE=SoftCool`), which previously re-lit the Comfort / VirusDoc / swing switches when navigating to the tile. A `_switchesReset` guard now filters those echoes until the next power-on.
+- **Remote / Samsung-app power-off now resets switches** — `_resetSwitchesUI()` is now also triggered from the state-update path (not only the HomeKit setter), so switches are cleared even when the AC is turned off outside of HomeKit.
+### Changed
+- **Application-layer heartbeat replaces dead-socket detector as primary keep-alive** — after authentication a `DeviceState` request is sent every 30 s (configurable via `keep_alive.heartbeat_interval`, default 30 000 ms). This replicates what `net-keepalive` TCP probes did: keeps router NAT tables alive and prevents the AC's WiFi module from sleeping, so the connection is maintained indefinitely and the AC can be turned on from the Home app at any time — even after the cooling has been off for an extended period.
+- **`dead_socket_timeout` default reduced to 3 min** (was 60 min). With heartbeats flowing every 30 s a live connection always has recent data; 3 min gives three missed beats before a forced reconnect.
+- **TLS connect timeout raised to 90 s** (was 30 s). The macOS TCP ETIMEDOUT fires at ~75 s for fully-unreachable hosts, so the OS handles those cases first; the 90 s timer only catches the TLS-hang scenario (TCP connected, handshake stalled).
+- **ECONNRESET reconnect backoff: 30 s** (was 5 s). When the AC resets an incoming connection — typically because it still tracks a phantom session from a previous rapid-reconnect loop — backing off gives it time to clear internal state before the next attempt.
+- **FastCool simplified to a single native TurboMode period** — the AC auto-reverts after ~30 min; the plugin detects the `COMODE=Off` event and cleanly ends the routine (restores previous temp + Auto fan). The previous 4-period / 2-hour loop is removed. A 35-min safety timer fires if the revert event is missed.
+
 ## 4.4.0 - 2026-06-01
 ### Changed
 - Removed `net-keepalive` (and its transitive `ffi-napi` / `ref-napi` native dependencies). Low-level TCP keepalive tuning (`TCP_KEEPINTVL` / `TCP_KEEPCNT`) is replaced by an application-layer dead-socket detector: the plugin tracks the timestamp of the most recent line received from the AC, and if no data has come in for `dead_socket_timeout` ms (default 60 min) it destroys the socket so the existing reconnect flow takes over. The detector is fully passive — no commands are sent to the AC for the purpose of probing, so it cannot trigger AC beeps. Default chosen as a safety net only; Node's `socket.setKeepAlive(true, initial_delay)` plus the OS-level TCP keepalive (~10 min on macOS) handles the common dead-socket cases first.
